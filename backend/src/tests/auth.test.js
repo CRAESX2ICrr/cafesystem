@@ -1,3 +1,5 @@
+// Tests authentication endpoints to make sure invalid login credentials are rejected.
+
 const request = require("supertest");
 const app = require("../app");
 

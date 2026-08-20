@@ -1,3 +1,5 @@
+// Tests order endpoints to make sure protected routes cannot be accessed without authentication.
+
 const request = require("supertest");
 const app = require("../app");
 
