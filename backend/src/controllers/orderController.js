@@ -31,6 +31,10 @@ const createOrder = async (req, res) => {
       text: `Your order has been received successfully. Order ID: ${order._id}. Status: ${order.status}`,
     });
 
+const io = req.app.get("io");
+io.emit("newOrder", order);
+
+
     res.status(201).json(order);
   } catch (error) {
     res.status(500).json({
@@ -87,6 +91,8 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
+const io = req.app.get("io");
+io.emit("orderStatusUpdated", order);
     res.json(order);
   } catch (error) {
     res.status(500).json({

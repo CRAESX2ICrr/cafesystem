@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -12,52 +11,25 @@ import {
   CookingPot,
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 
 export default function Header() {
   const router = useRouter();
   const { cart } = useCart();
-
-  const [user, setUser] = useState(null);
-
-  const updateUser = () => {
-    const savedUser = localStorage.getItem("user");
-
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error("Could not read user data", error);
-        localStorage.removeItem("user");
-        setUser(null);
-      }
-    } else {
-      setUser(null);
-    }
-  };
-
-  useEffect(() => {
-    updateUser();
-
-    window.addEventListener("authChanged", updateUser);
-
-    return () => {
-      window.removeEventListener("authChanged", updateUser);
-    };
-  }, []);
-
+  const { user, logout, isLoaded } = useAuth();
   const totalItems = cart.reduce(
     (total, item) => total + item.quantity,
     0
   );
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    const handleLogout = () => {
+      logout();
+      router.push("/");
+    };
 
-    window.dispatchEvent(new Event("authChanged"));
-
-    router.push("/");
-  };
+    if (!isLoaded) {
+      return null;
+    }
 
   return (
     <header className="border-b border-white/10 bg-gradient-to-r from-[#09090b] via-[#18120d] to-[#09090b] px-6 py-4">

@@ -10,7 +10,9 @@ import {
   ShoppingBag,
   CheckCircle,
 } from "lucide-react";
+
 import { useCart } from "../../context/CartContext";
+import { useAuth } from "../../context/AuthContext";
 import API_URL from "../../services/api";
 
 export default function CartPage() {
@@ -23,6 +25,8 @@ export default function CartPage() {
     clearCart,
   } = useCart();
 
+  const { token } = useAuth();
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -32,8 +36,6 @@ export default function CartPage() {
   );
 
   const handleCheckout = async () => {
-    const token = localStorage.getItem("token");
-
     if (!token) {
       const goToLogin = window.confirm(
         "You need to log in before placing an order. Go to the login page?"
@@ -74,7 +76,6 @@ export default function CartPage() {
       }
 
       clearCart();
-
       setMessage("Order placed successfully!");
 
       setTimeout(() => {
@@ -179,7 +180,9 @@ export default function CartPage() {
               <div className="flex items-center gap-6">
                 <div className="flex items-center rounded-lg border border-white/10">
                   <button
-                    onClick={() => updateQuantity(item._id, -1)}
+                    onClick={() =>
+                      updateQuantity(item._id, -1)
+                    }
                     className="p-2 text-zinc-300 transition hover:text-orange-300"
                   >
                     <Minus size={18} />
@@ -190,7 +193,9 @@ export default function CartPage() {
                   </span>
 
                   <button
-                    onClick={() => updateQuantity(item._id, 1)}
+                    onClick={() =>
+                      updateQuantity(item._id, 1)
+                    }
                     className="p-2 text-zinc-300 transition hover:text-orange-300"
                   >
                     <Plus size={18} />
@@ -202,7 +207,9 @@ export default function CartPage() {
                 </span>
 
                 <button
-                  onClick={() => removeFromCart(item._id)}
+                  onClick={() =>
+                    removeFromCart(item._id)
+                  }
                   className="text-zinc-500 transition hover:text-red-400"
                   aria-label={`Remove ${item.name}`}
                 >
@@ -235,7 +242,9 @@ export default function CartPage() {
             disabled={loading}
             className="rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 px-6 py-3 font-semibold text-black transition hover:scale-105 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {loading ? "Placing Order..." : "Proceed to Checkout"}
+            {loading
+              ? "Placing Order..."
+              : "Proceed to Checkout"}
           </button>
         </div>
       </div>

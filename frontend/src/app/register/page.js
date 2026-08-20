@@ -13,6 +13,48 @@ import {
 } from "lucide-react";
 import API_URL from "../../services/api";
 
+function PasswordInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+  show,
+  setShow,
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-medium text-zinc-300">
+        {label}
+      </label>
+
+      <div className="relative">
+        <Lock
+          size={18}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
+        />
+
+        <input
+          type={show ? "text" : "password"}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          required
+          className="w-full rounded-xl border border-white/10 bg-black/20 py-3 pl-11 pr-12 text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-400"
+        />
+
+        <button
+          type="button"
+          onClick={() => setShow(!show)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 transition hover:text-orange-300"
+          aria-label={show ? "Hide password" : "Show password"}
+        >
+          {show ? <EyeOff size={18} /> : <Eye size={18} />}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function RegisterPage() {
   const router = useRouter();
 
@@ -22,17 +64,16 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState(false);
 
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e) => {
     e.preventDefault();
-
     setMessage("");
 
-    // Check passwords match before sending to backend
     if (password !== confirmPassword) {
       setMessage("Passwords do not match.");
       return;
@@ -73,6 +114,7 @@ export default function RegisterPage() {
     <div className="min-h-screen px-6 py-16 text-white">
       <div className="mx-auto w-full max-w-md">
         <div className="rounded-3xl border border-[#3b2a20]/80 bg-[#1b120e] p-8 shadow-2xl shadow-black/40">
+
           <div className="mb-8 text-center">
             <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-amber-400">
               <UserPlus size={24} className="text-black" />
@@ -91,7 +133,7 @@ export default function RegisterPage() {
           </div>
 
           <form onSubmit={handleRegister} className="space-y-5">
-            {/* Name */}
+
             <div>
               <label className="mb-2 block text-sm font-medium text-zinc-300">
                 Name
@@ -114,7 +156,6 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Email */}
             <div>
               <label className="mb-2 block text-sm font-medium text-zinc-300">
                 Email
@@ -137,87 +178,24 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Password */}
-            <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-300">
-                Password
-              </label>
+            <PasswordInput
+              label="Password"
+              value={password}
+              onChange={setPassword}
+              placeholder="Create a password"
+              show={showPassword}
+              setShow={setShowPassword}
+            />
 
-              <div className="relative">
-                <Lock
-                  size={18}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
-                />
+            <PasswordInput
+              label="Confirm Password"
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+              placeholder="Enter your password again"
+              show={showConfirmPassword}
+              setShow={setShowConfirmPassword}
+            />
 
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Create a password"
-                  required
-                  className="w-full rounded-xl border border-white/10 bg-black/20 py-3 pl-11 pr-12 text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-400"
-                />
-
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 transition hover:text-orange-300"
-                  aria-label={
-                    showPassword ? "Hide password" : "Show password"
-                  }
-                >
-                  {showPassword ? (
-                    <EyeOff size={18} />
-                  ) : (
-                    <Eye size={18} />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Confirm Password */}
-            <div>
-              <label className="mb-2 block text-sm font-medium text-zinc-300">
-                Confirm Password
-              </label>
-
-              <div className="relative">
-                <Lock
-                  size={18}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
-                />
-
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Enter your password again"
-                  required
-                  className="w-full rounded-xl border border-white/10 bg-black/20 py-3 pl-11 pr-12 text-white outline-none transition placeholder:text-zinc-600 focus:border-orange-400"
-                />
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowConfirmPassword(!showConfirmPassword)
-                  }
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 transition hover:text-orange-300"
-                  aria-label={
-                    showConfirmPassword
-                      ? "Hide password"
-                      : "Show password"
-                  }
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff size={18} />
-                  ) : (
-                    <Eye size={18} />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Error Message */}
             {message && (
               <div className="rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
                 {message}
@@ -230,7 +208,6 @@ export default function RegisterPage() {
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 px-6 py-3 font-semibold text-black transition hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <UserPlus size={18} />
-
               {loading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
@@ -244,6 +221,7 @@ export default function RegisterPage() {
               Log in
             </Link>
           </p>
+
         </div>
       </div>
     </div>

@@ -10,22 +10,38 @@ import {
   Loader2,
 } from "lucide-react";
 import API_URL from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
+
+const statusStyles = {
+  Ready: {
+    className: "border-green-500/20 bg-green-500/10 text-green-300",
+    Icon: CheckCircle2,
+  },
+  "In-Progress": {
+    className: "border-blue-500/20 bg-blue-500/10 text-blue-300",
+    Icon: Loader2,
+  },
+  Pending: {
+    className: "border-orange-500/20 bg-orange-500/10 text-orange-300",
+    Icon: Clock,
+  },
+};
 
 export default function OrdersPage() {
+  const { token } = useAuth();
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    if (!token) {
+      setMessage("Please log in to view your orders.");
+      setLoading(false);
+      return;
+    }
+
     const fetchOrders = async () => {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        setMessage("Please log in to view your orders.");
-        setLoading(false);
-        return;
-      }
-
       try {
         const response = await fetch(
           `${API_URL}/api/orders/my-orders`,
@@ -40,7 +56,6 @@ export default function OrdersPage() {
 
         if (!response.ok) {
           setMessage(data.message || "Failed to load orders.");
-          setLoading(false);
           return;
         }
 
@@ -54,33 +69,7 @@ export default function OrdersPage() {
     };
 
     fetchOrders();
-  }, []);
-
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case "Ready":
-        return "border-green-500/20 bg-green-500/10 text-green-300";
-
-      case "In-Progress":
-        return "border-blue-500/20 bg-blue-500/10 text-blue-300";
-
-      default:
-        return "border-orange-500/20 bg-orange-500/10 text-orange-300";
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "Ready":
-        return <CheckCircle2 size={16} />;
-
-      case "In-Progress":
-        return <Loader2 size={16} />;
-
-      default:
-        return <Clock size={16} />;
-    }
-  };
+  }, [token]);
 
   if (loading) {
     return (
@@ -126,6 +115,7 @@ export default function OrdersPage() {
   return (
     <div className="min-h-screen bg-[#09090b] px-6 py-16 text-white">
       <div className="mx-auto max-w-5xl">
+
         <div className="mb-12">
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-orange-300">
             Order History
@@ -167,93 +157,97 @@ export default function OrdersPage() {
           </div>
         ) : (
           <div className="space-y-5">
-            {orders.map((order) => (
-              <div
-                key={order._id}
-                className="rounded-2xl border border-white/10 bg-white/[0.03] p-6"
-              >
-                <div className="flex flex-col justify-between gap-4 border-b border-white/10 pb-5 sm:flex-row sm:items-center">
-                  <div>
-                    <p className="text-sm text-zinc-500">
-                      Order
-                    </p>
+            {orders.map((order) => {
+              const status =
+                statusStyles[order.status] || statusStyles.Pending;
 
-                    <p className="mt-1 font-mono text-sm text-zinc-300">
-                      #{order._id.slice(-8)}
-                    </p>
-                  </div>
+              const StatusIcon = status.Icon;
 
-                  <div className="flex flex-wrap items-center gap-4">
-                    <p className="text-sm text-zinc-500">
-                      {new Date(order.createdAt).toLocaleDateString(
-                        "en-US",
-                        {
+              const total = order.items.reduce(
+                (total, item) =>
+                  total +
+                  (item.menuItem?.price || 0) *
+                    item.quantity,
+                0
+              );
+
+              return (
+                <div
+                  key={order._id}
+                  className="rounded-2xl border border-white/10 bg-white/[0.03] p-6"
+                >
+                  <div className="flex flex-col justify-between gap-4 border-b border-white/10 pb-5 sm:flex-row sm:items-center">
+
+                    <div>
+                      <p className="text-sm text-zinc-500">
+                        Order
+                      </p>
+
+                      <p className="mt-1 font-mono text-sm text-zinc-300">
+                        #{order._id.slice(-8)}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-4">
+                      <p className="text-sm text-zinc-500">
+                        {new Date(
+                          order.createdAt
+                        ).toLocaleDateString("en-US", {
                           year: "numeric",
                           month: "short",
                           day: "numeric",
-                        }
-                      )}
-                    </p>
+                        })}
+                      </p>
 
-                    <div
-                      className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium ${getStatusStyle(
-                        order.status
-                      )}`}
-                    >
-                      {getStatusIcon(order.status)}
-                      {order.status}
+                      <div
+                        className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium ${status.className}`}
+                      >
+                        <StatusIcon size={16} />
+                        {order.status}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="mt-5 space-y-3">
-                  {order.items.map((item) => (
-                    <div
-                      key={item._id}
-                      className="flex items-center justify-between"
-                    >
-                      <div>
-                        <p className="font-medium text-white">
-                          {item.menuItem?.name ||
-                            "Menu item unavailable"}
-                        </p>
+                  <div className="mt-5 space-y-3">
+                    {order.items.map((item) => (
+                      <div
+                        key={item._id}
+                        className="flex items-center justify-between"
+                      >
+                        <div>
+                          <p className="font-medium text-white">
+                            {item.menuItem?.name ||
+                              "Menu item unavailable"}
+                          </p>
 
-                        <p className="mt-1 text-sm text-zinc-500">
-                          Quantity: {item.quantity}
+                          <p className="mt-1 text-sm text-zinc-500">
+                            Quantity: {item.quantity}
+                          </p>
+                        </div>
+
+                        <p className="font-semibold text-orange-300">
+                          $
+                          {(
+                            (item.menuItem?.price || 0) *
+                            item.quantity
+                          ).toFixed(2)}
                         </p>
                       </div>
+                    ))}
+                  </div>
 
-                      <p className="font-semibold text-orange-300">
-                        $
-                        {(
-                          (item.menuItem?.price || 0) *
-                          item.quantity
-                        ).toFixed(2)}
-                      </p>
-                    </div>
-                  ))}
+                  <div className="mt-5 flex justify-between border-t border-white/10 pt-5">
+                    <span className="text-zinc-400">
+                      Order Total
+                    </span>
+
+                    <span className="text-lg font-bold text-white">
+                      ${total.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
-
-                <div className="mt-5 flex justify-between border-t border-white/10 pt-5">
-                  <span className="text-zinc-400">
-                    Order Total
-                  </span>
-
-                  <span className="text-lg font-bold text-white">
-                    $
-                    {order.items
-                      .reduce(
-                        (total, item) =>
-                          total +
-                          (item.menuItem?.price || 0) *
-                            item.quantity,
-                        0
-                      )
-                      .toFixed(2)}
-                  </span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

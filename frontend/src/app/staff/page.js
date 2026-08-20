@@ -10,9 +10,12 @@ import {
   RefreshCw,
 } from "lucide-react";
 import API_URL from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
 
 export default function StaffPage() {
   const router = useRouter();
+
+  const { user, token, isLoaded } = useAuth();
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,10 +23,7 @@ export default function StaffPage() {
   const [message, setMessage] = useState("");
 
   const getOrders = async () => {
-    const token = localStorage.getItem("token");
-
     if (!token) {
-      router.push("/login");
       return;
     }
 
@@ -54,30 +54,26 @@ export default function StaffPage() {
   };
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
+    if (!isLoaded) return;
 
-    if (!savedUser) {
+    if (!user) {
       router.push("/login");
       return;
     }
 
-    try {
-      const user = JSON.parse(savedUser);
-
-      if (user.role !== "staff") {
-        router.push("/");
-        return;
-      }
-
-      getOrders();
-    } catch (error) {
-      console.error(error);
-      router.push("/login");
+    if (user.role !== "staff") {
+      router.push("/");
+      return;
     }
-  }, []);
+
+    getOrders();
+  }, [isLoaded, user, token]);
 
   const updateStatus = async (orderId, status) => {
-    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
 
     try {
       setUpdatingId(orderId);
@@ -130,9 +126,20 @@ export default function StaffPage() {
     }
   };
 
+  if (!isLoaded || !user || user.role !== "staff") {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-white">
+        <div className="text-zinc-300">
+          Loading...
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#09090b] px-6 py-12 text-white">
+    <div className="min-h-screen px-6 py-12 text-white">
       <div className="mx-auto max-w-7xl">
+
         <div className="mb-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-orange-300">
@@ -146,14 +153,14 @@ export default function StaffPage() {
               </span>
             </h1>
 
-            <p className="mt-4 text-zinc-400">
+            <p className="mt-4 text-zinc-300">
               Review incoming orders and update their preparation status.
             </p>
           </div>
 
           <button
             onClick={getOrders}
-            className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-medium text-zinc-300 transition hover:border-orange-400/30 hover:text-orange-300"
+            className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#17110e]/80 px-4 py-3 text-sm font-medium text-zinc-200 backdrop-blur-md transition hover:border-orange-400/30 hover:text-orange-300"
           >
             <RefreshCw size={17} />
             Refresh
@@ -161,27 +168,27 @@ export default function StaffPage() {
         </div>
 
         {message && (
-          <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          <div className="mb-6 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300 backdrop-blur-md">
             {message}
           </div>
         )}
 
         {loading ? (
-          <div className="flex min-h-[300px] items-center justify-center text-zinc-400">
+          <div className="flex min-h-[300px] items-center justify-center text-zinc-300">
             Loading orders...
           </div>
         ) : orders.length === 0 ? (
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] px-6 py-20 text-center">
+          <div className="rounded-3xl border border-white/10 bg-[#17110e]/80 px-6 py-20 text-center backdrop-blur-md">
             <ClipboardList
               size={42}
-              className="mx-auto mb-4 text-zinc-600"
+              className="mx-auto mb-4 text-zinc-500"
             />
 
             <h2 className="text-xl font-semibold">
               No orders yet
             </h2>
 
-            <p className="mt-2 text-zinc-400">
+            <p className="mt-2 text-zinc-300">
               New customer orders will appear here.
             </p>
           </div>
@@ -190,11 +197,11 @@ export default function StaffPage() {
             {orders.map((order) => (
               <div
                 key={order._id}
-                className="rounded-3xl border border-white/10 bg-white/[0.03] p-6"
+                className="rounded-3xl border border-white/10 bg-[#17110e]/80 p-6 shadow-xl shadow-black/20 backdrop-blur-md"
               >
                 <div className="flex flex-col justify-between gap-5 border-b border-white/10 pb-5 sm:flex-row sm:items-start">
                   <div>
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-zinc-400">
                       Order
                     </p>
 
@@ -208,7 +215,7 @@ export default function StaffPage() {
                           {order.customer.name}
                         </p>
 
-                        <p className="mt-1 text-sm text-zinc-500">
+                        <p className="mt-1 text-sm text-zinc-400">
                           {order.customer.email}
                         </p>
                       </div>
@@ -216,7 +223,7 @@ export default function StaffPage() {
                   </div>
 
                   <div className="flex flex-col items-start gap-3 sm:items-end">
-                    <p className="text-sm text-zinc-500">
+                    <p className="text-sm text-zinc-400">
                       {new Date(order.createdAt).toLocaleString()}
                     </p>
 
@@ -241,7 +248,7 @@ export default function StaffPage() {
                           {item.menuItem?.name || "Menu item"}
                         </p>
 
-                        <p className="mt-1 text-sm text-zinc-500">
+                        <p className="mt-1 text-sm text-zinc-400">
                           Quantity: {item.quantity}
                         </p>
                       </div>
@@ -258,7 +265,7 @@ export default function StaffPage() {
 
                 <div className="flex flex-col justify-between gap-5 border-t border-white/10 pt-5 sm:flex-row sm:items-center">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-zinc-500">
+                    <span className="text-sm text-zinc-400">
                       Update status:
                     </span>
 
@@ -323,6 +330,7 @@ export default function StaffPage() {
             ))}
           </div>
         )}
+
       </div>
     </div>
   );
