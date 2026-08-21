@@ -18,7 +18,7 @@ export default function Header() {
 const [showNotifications, setShowNotifications] = useState(false);
 const [notifications, setNotifications] = useState([]);
 const [loadingNotifications, setLoadingNotifications] = useState(false);
-
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
   
 
   const totalItems = cart.reduce(
@@ -42,7 +42,7 @@ useEffect(() => {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        "http://localhost:5000/api/notifications",
+        `${API_URL}/api/notifications`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -77,7 +77,7 @@ useEffect(() => {
   return;
   }
 
-  const socket = io("http://localhost:5000");
+  const socket = io(API_URL);
 
   socket.on("connect", () => {
     console.log("Connected to Socket.IO:", socket.id);
