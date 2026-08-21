@@ -3,7 +3,8 @@ const MenuItem = require("../models/MenuItem");
 // GET ALL MENU ITEMS
 const getMenuItems = async (req, res) => {
   try {
-    const menuItems = await MenuItem.find();
+    const menuItems = await MenuItem.find()
+      .populate("ingredients.ingredient");
 
     res.json(menuItems);
   } catch (error) {
@@ -23,6 +24,7 @@ const createMenuItem = async (req, res) => {
       price,
       image,
       available,
+      ingredients,
     } = req.body;
 
     const menuItem = await MenuItem.create({
@@ -32,9 +34,14 @@ const createMenuItem = async (req, res) => {
       price,
       image,
       available,
+      ingredients,
     });
 
-    res.status(201).json(menuItem);
+    const populatedMenuItem = await menuItem.populate(
+      "ingredients.ingredient"
+    );
+
+    res.status(201).json(populatedMenuItem);
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -48,8 +55,11 @@ const updateMenuItem = async (req, res) => {
     const menuItem = await MenuItem.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true }
-    );
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).populate("ingredients.ingredient");
 
     if (!menuItem) {
       return res.status(404).json({

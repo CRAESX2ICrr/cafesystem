@@ -110,11 +110,26 @@ export default function DashboardPage() {
     ["Ready", report.ordersByStatus.Ready, CheckCircle2],
   ];
 
-  const management = [
-    ["/admin/menu", UtensilsCrossed, "Manage Menu", "Add, edit, and remove cafe menu items."],
-    ["/admin/staff", Users, "Manage Staff", "Create and manage staff accounts."],
-  ];
-
+const management = [
+  [
+    "/admin/menu",
+    UtensilsCrossed,
+    "Manage Menu",
+    "Add, edit, and remove cafe menu items.",
+  ],
+  [
+    "/admin/staff",
+    Users,
+    "Manage Staff",
+    "Create and manage staff accounts.",
+  ],
+  [
+    "/admin/inventory",
+    Package,
+    "Manage Ingredients",
+    "Manage ingredients, stock levels, low-stock thresholds, and suppliers.",
+  ],
+];
   return (
     <div className="min-h-screen bg-[#09090b] px-6 py-12 text-white">
       <div className="mx-auto max-w-7xl">
@@ -208,7 +223,7 @@ export default function DashboardPage() {
             Management
           </h2>
 
-          <div className="mt-6 grid gap-6 md:grid-cols-2">
+          <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {management.map(([href, Icon, title, description]) => (
               <Link
                 key={href}
