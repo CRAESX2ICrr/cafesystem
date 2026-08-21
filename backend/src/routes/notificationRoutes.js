@@ -10,19 +10,19 @@ const roleMiddleware = require("../middleware/roleMiddleware");
 
 const router = express.Router();
 
-// Staff can view notifications
+// Staff and admin can view notifications
 router.get(
   "/",
   authMiddleware,
-  roleMiddleware("staff"),
+  roleMiddleware("staff", "admin"),
   getNotifications
 );
 
-// Staff can mark a notification as read
+// Staff and admin can mark a notification as read
 router.put(
   "/:id/read",
   authMiddleware,
-  roleMiddleware("staff"),
+  roleMiddleware("staff", "admin"),
   markNotificationAsRead
 );
 
